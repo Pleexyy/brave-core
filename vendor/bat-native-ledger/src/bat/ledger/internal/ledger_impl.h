@@ -60,6 +60,10 @@ namespace braveledger_report {
 class Report;
 }
 
+namespace braveledger_sku {
+class SKU;
+}
+
 namespace confirmations {
 class Confirmations;
 }
@@ -683,6 +687,33 @@ class LedgerImpl : public ledger::Ledger {
       ledger::SKUTransactionPtr transaction,
       ledger::ResultCallback callback);
 
+  void SaveSKUExternalTransaction(
+      const std::string& transaction_id,
+      const std::string& external_transaction_id,
+      ledger::ResultCallback callback);
+
+  void UpdateSKUOrderStatus(
+      const std::string& order_id,
+      const ledger::SKUOrderStatus status,
+      ledger::ResultCallback callback);
+
+  void TransferFunds(
+      const ledger::SKUTransaction& transaction,
+      const std::string& destination,
+      ledger::ExternalWalletPtr wallet,
+      ledger::TransactionCallback callback);
+
+  void GetSKUOrder(
+      const std::string& order_id,
+      ledger::GetSKUOrderCallback callback);
+
+  void ProcessSKU(
+      const std::string& destination,
+      const std::vector<ledger::SKUOrderItem>& items,
+      ledger::ExternalWalletPtr wallet,
+      ledger::SKUOrderCallback callback,
+      const std::string& contribution_id = "");
+
  private:
   void InitializeConfirmations(
       const bool execute_create_script,
@@ -771,6 +802,7 @@ class LedgerImpl : public ledger::Ledger {
   std::unique_ptr<braveledger_database::Database> bat_database_;
   std::unique_ptr<confirmations::Confirmations> bat_confirmations_;
   std::unique_ptr<braveledger_report::Report> bat_report_;
+  std::unique_ptr<braveledger_sku::SKU> bat_sku_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   bool initialized_task_scheduler_;
 
