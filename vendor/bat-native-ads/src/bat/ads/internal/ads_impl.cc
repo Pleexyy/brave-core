@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <fstream>
 #include <functional>
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -511,6 +512,8 @@ void AdsImpl::OnTabClosed(
   destroy_info.tab_id = tab_id;
   const std::string report = reports.GenerateDestroyEventReport(destroy_info);
   ads_client_->EventLog(report);
+
+  // here
 }
 
 void AdsImpl::RemoveAllHistory(
@@ -788,26 +791,27 @@ std::string AdsImpl::ClassifyPage(
     const std::string& url,
     const std::string& content) {
   DCHECK(user_model_);
-  auto page_score = user_model_->ClassifyPage(content);
 
-  auto winning_category = GetWinningCategory(page_score);
+  const std::map<std::string, double> page_classification =
+      user_model_->ClassifyPage(content);
+
+  const std::string winning_category = GetWinningCategory(page_classification);
   if (winning_category.empty()) {
-    BLOG(INFO) << "Failed to classify page at " << url
-        << " as not enough content";
-    return "";
+    BLOG(INFO) << "Failed to classify page at " << url;
+    return winning_category;
   }
 
   client_->SetLastPageClassification(winning_category);
 
-  client_->AppendPageScoreToPageScoreHistory(page_score);
+  client_->AppendPageClassificationToHistory(page_classification);
 
-  CachePageScore(active_tab_url_, page_score);
+  CachePageClassification(active_tab_url_, page_classification);
 
   const auto winning_categories = GetWinningCategories();
 
   BLOG(INFO) << "Successfully classified page at " << url << " as "
       << winning_category << ". Winning category over time is "
-      << winning_categories.front();
+          << winning_categories.front();
 
   return winning_category;
 }
@@ -819,88 +823,86 @@ WinningCategoryList AdsImpl::GetWinningCategories() {
     return winning_categories;
   }
 
-  auto page_score_history = client_->GetPageScoreHistory();
-  if (page_score_history.empty()) {
+  const std::deque<std::map<std::string, double>> page_classification_history =
+      client_->GetPageClassificationHistory();
+  if (page_classification_history.empty()) {
     return winning_categories;
   }
 
-  uint64_t count = page_score_history.front().size();
+  // Calculate winning categories over time
+  std::map<std::string, double> accumulated_page_scores;
 
-  std::vector<double> winning_category_page_scores(count);
-  std::fill(winning_category_page_scores.begin(),
-      winning_category_page_scores.end(), 0.0);
+  for (const auto& page_classification : page_classification_history) {
+    for (const auto& category : page_classification) {
+      const std::string name = category.first;
 
-  for (const auto& page_score : page_score_history) {
-    DCHECK(page_score.size() == count);
-    DCHECK(user_model_);
-
-    for (size_t i = 0; i < page_score.size(); i++) {
-      auto taxonomy = user_model_->GetTaxonomyAtIndex(i);
-      if (client_->IsFilteredCategory(taxonomy)) {
-        BLOG(INFO) << taxonomy
-                   << " taxonomy has been excluded from the winner over time";
+      if (client_->IsFilteredCategory(name)) {
+        BLOG(INFO) << name << " category has been excluded from the winner "
+            "over time";
 
         continue;
       }
 
-      winning_category_page_scores[i] += page_score[i];
+      const double score = category.second;
+
+      auto iter = accumulated_page_scores.find(name);
+      if (iter == accumulated_page_scores.end()) {
+        accumulated_page_scores.insert({name, score});
+      } else {
+        iter->second += score;
+      }
     }
   }
 
-  auto sorted_winning_category_page_scores = winning_category_page_scores;
-  std::sort(sorted_winning_category_page_scores.begin(),
-      sorted_winning_category_page_scores.end(), std::greater<double>());
+  // Filter top |kTopWinningCategoryCountForServingAds| winning page scores
+  std::vector<std::pair<std::string, double>> winning_page_scores(
+      kTopWinningCategoryCountForServingAds);
 
-  for (const auto& page_score : sorted_winning_category_page_scores) {
-    if (page_score == 0.0) {
-      continue;
-    }
+  std::partial_sort_copy(accumulated_page_scores.begin(),
+      accumulated_page_scores.end(), winning_page_scores.begin(),
+          winning_page_scores.end(),
+              [](const std::pair<std::string, double>& lhs,
+                  const std::pair<std::string, double>& rhs) {
+    return lhs.second > rhs.second;
+  });
 
-    auto it = std::find(winning_category_page_scores.begin(),
-        winning_category_page_scores.end(), page_score);
-    const int index = std::distance(winning_category_page_scores.begin(), it);
-    DCHECK(user_model_);
-    const std::string category = user_model_->GetTaxonomyAtIndex(index);
-    if (category.empty()) {
-      continue;
-    }
-
-    if (std::find(winning_categories.begin(), winning_categories.end(),
-        category) != winning_categories.end()) {
-      continue;
-    }
-
-    winning_categories.push_back(category);
-
-    if (winning_categories.size() == kWinningCategoryCountForServingAds) {
-      break;
-    }
+  // Get winning categories
+  for (const auto& winning_page_score : winning_page_scores) {
+    const std::string name = winning_page_score.first;
+    winning_categories.push_back(name);
   }
 
   return winning_categories;
 }
 
 std::string AdsImpl::GetWinningCategory(
-    const std::vector<double>& page_score) {
-  DCHECK(user_model_);
-  return user_model_->GetWinningCategory(page_score);
+    const std::map<std::string, double>& page_classification) {
+  std::string winning_category;
+
+  auto iter = std::max_element(page_classification.begin(),
+      page_classification.end(), [](const std::pair<std::string, double>& a,
+          const std::pair<std::string, double>& b) -> bool {
+    return a.second < b.second;
+  });
+
+  return iter->first;
 }
 
-void AdsImpl::CachePageScore(
+void AdsImpl::CachePageClassification(
     const std::string& url,
-    const std::vector<double>& page_score) {
-  auto cached_page_score = page_score_cache_.find(url);
+    const std::map<std::string, double>& page_classification) {
+  auto iter = page_classification_cache_.find(url);
 
-  if (cached_page_score == page_score_cache_.end()) {
-    page_score_cache_.insert({url, page_score});
+  if (iter == page_classification_cache_.end()) {
+    page_classification_cache_.insert({url, page_classification});
   } else {
-    cached_page_score->second = page_score;
+    iter->second = page_classification;
   }
 }
 
-const std::map<std::string, std::vector<double>>&
-AdsImpl::GetPageScoreCache() const {
-  return page_score_cache_;
+const std::map<std::string, std::map<std::string, double>>&
+AdsImpl::GetPageClassificationCache() const {
+  return page_classification_cache_;
 }
 
 PurchaseIntentWinningCategoryList

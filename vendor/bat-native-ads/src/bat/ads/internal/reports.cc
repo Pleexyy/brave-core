@@ -177,13 +177,25 @@ std::string Reports::GenerateLoadEventReport(
   }
   writer.EndArray();
 
-  auto page_score_cache = ads_->GetPageScoreCache();
-  auto cached_page_score = page_score_cache.find(info.tab_url);
-  if (cached_page_score != page_score_cache.end()) {
-    writer.String("pageScore");
+  auto page_classification_cache = ads_->GetPageClassificationCache();
+  auto iter = page_classification_cache.find(info.tab_url);
+  if (iter != page_classification_cache.end()) {
+    writer.String("pageClassification");
     writer.StartArray();
-    for (const auto& page_score : cached_page_score->second) {
-      writer.Double(page_score);
+
+    std::map<std::string, double> categories = iter->second;
+    for (const auto& category : categories) {
+      writer.StartObject();
+
+      writer.String("name");
+      const std::string name = category.first;
+      writer.String(name.c_str());
+
+      writer.String("score");
+      const double score = category.second;
+      writer.Double(score);
+
+      writer.EndObject();
     }
     writer.EndArray();
   }

@@ -174,13 +174,15 @@ class AdsImpl : public Ads {
   WinningCategoryList GetWinningCategories();
   PurchaseIntentWinningCategoryList GetWinningPurchaseIntentCategories();
   std::string GetWinningCategory(
-      const std::vector<double>& page_score);
+      const std::map<std::string, double>& page_classification);
 
-  std::map<std::string, std::vector<double>> page_score_cache_;
-  void CachePageScore(
+  std::map<std::string, std::map<std::string, double>>
+      page_classification_cache_;
+  void CachePageClassification(
       const std::string& url,
-      const std::vector<double>& page_score);
-  const std::map<std::string, std::vector<double>>& GetPageScoreCache() const;
+      const std::map<std::string, double>& page_classification);
+  const std::map<std::string, std::map<std::string, double>>&
+      GetPageClassificationCache() const;
 
   void TestShoppingData(
       const std::string& url);

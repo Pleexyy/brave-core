@@ -110,9 +110,9 @@ class Client {
   void SetLastPageClassification(
       const std::string& classification);
   std::string GetLastPageClassification();
-  void AppendPageScoreToPageScoreHistory(
-      const std::vector<double>& page_score);
-  std::deque<std::vector<double>> GetPageScoreHistory();
+  void AppendPageClassificationToHistory(
+      const std::map<std::string, double>& page_classification);
+  std::deque<std::map<std::string, double>> GetPageClassificationHistory();
   void AppendTimestampToCreativeSetHistory(
       const std::string& creative_instance_id,
       const uint64_t timestamp_in_seconds);

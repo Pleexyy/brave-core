@@ -550,19 +550,20 @@ std::string Client::GetLastPageClassification() {
   return client_state_->last_page_classification;
 }
 
-void Client::AppendPageScoreToPageScoreHistory(
-    const std::vector<double>& page_score) {
-  client_state_->page_score_history.push_front(page_score);
-  if (client_state_->page_score_history.size() >
+void Client::AppendPageClassificationToHistory(
+    const std::map<std::string, double>& page_classification) {
+  client_state_->page_classification_history.push_front(page_classification);
+  if (client_state_->page_classification_history.size() >
       kMaximumEntriesInPageScoreHistory) {
-    client_state_->page_score_history.pop_back();
+    client_state_->page_classification_history.pop_back();
   }
 
   SaveState();
 }
 
-std::deque<std::vector<double>> Client::GetPageScoreHistory() {
-  return client_state_->page_score_history;
+std::deque<std::map<std::string, double>>
+Client::GetPageClassificationHistory() {
+  return client_state_->page_classification_history;
 }
 
 void Client::AppendTimestampToCreativeSetHistory(

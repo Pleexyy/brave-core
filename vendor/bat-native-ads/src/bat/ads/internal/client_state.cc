@@ -155,15 +155,20 @@ Result ClientState::FromJson(
     last_page_classification = client["lastPageClassification"].GetString();
   }
 
-  if (client.HasMember("pageScoreHistory")) {
-    for (const auto& history : client["pageScoreHistory"].GetArray()) {
-      std::vector<double> page_scores;
+  if (client.HasMember("pageClassificationHistory")) {
+    for (const auto& page_classification :
+        client["pageClassificationHistory"].GetArray()) {
+      std::map<std::string, double> categories;
 
-      for (const auto& page_score : history.GetArray()) {
-        page_scores.push_back(page_score.GetDouble());
+      for (const auto& category :
+          page_classification["categories"].GetArray()) {
+        const std::string name = category["name"].GetString();
+        const double score = category["score"].GetDouble();
+
+        categories.insert({name, score});
       }
 
-      page_score_history.push_back(page_scores);
+      page_classification_history.push_back(categories);
     }
   }
 
@@ -313,14 +318,31 @@ void SaveToJson(JsonWriter* writer, const ClientState& state) {
   writer->String("lastPageClassification");
   writer->String(state.last_page_classification.c_str());
 
-  writer->String("pageScoreHistory");
+  writer->String("pageClassificationHistory");
   writer->StartArray();
-  for (const auto& page_score : state.page_score_history) {
+  for (const auto& page_classification : state.page_classification_history) {
+    writer->StartObject();
+
+    writer->String("categories");
     writer->StartArray();
-    for (const auto& score : page_score) {
+
+    for (const auto& category : page_classification) {
+      writer->StartObject();
+
+      writer->String("name");
+      const std::string name = category.first;
+      writer->String(name.c_str());
+
+      writer->String("score");
+      const double score = category.second;
       writer->Double(score);
+
+      writer->EndObject();
     }
+
     writer->EndArray();
+
+    writer->EndObject();
   }
   writer->EndArray();
 

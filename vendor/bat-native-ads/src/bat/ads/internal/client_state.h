@@ -46,7 +46,7 @@ struct ClientState {
   std::string user_model_language = kDefaultUserModelLanguage;
   std::vector<std::string> user_model_languages;
   std::string last_page_classification;
-  std::deque<std::vector<double>> page_score_history;
+  std::deque<std::map<std::string, double>> page_classification_history;
   std::map<std::string, std::deque<uint64_t>> creative_set_history;
   std::map<std::string, std::deque<uint64_t>> ad_conversion_history;
   std::map<std::string, std::deque<uint64_t>> campaign_history;
