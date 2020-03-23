@@ -1,5 +1,5 @@
 diff --git a/third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.cc b/third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.cc
-index 9ce2506096723d04b7aab6267d5c452cfe0424e8..7f391d85fce6472b50d8a08eb74bb8cc05c99dd8 100644
+index 9ce2506096723d04b7aab6267d5c452cfe0424e8..9f7dfe3043d814aa031ab0a4fe325ca786271076 100644
 --- a/third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.cc
 +++ b/third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.cc
 @@ -10,6 +10,7 @@
@@ -79,7 +79,7 @@ index 9ce2506096723d04b7aab6267d5c452cfe0424e8..7f391d85fce6472b50d8a08eb74bb8cc
    return IsPointInStrokeInternal(dom_path->GetPath(), x, y);
  }
  
-@@ -1545,11 +1571,16 @@ ImageData* BaseRenderingContext2D::createImageData(
+@@ -1545,6 +1571,7 @@ ImageData* BaseRenderingContext2D::createImageData(
  }
  
  ImageData* BaseRenderingContext2D::getImageData(
@@ -87,12 +87,11 @@ index 9ce2506096723d04b7aab6267d5c452cfe0424e8..7f391d85fce6472b50d8a08eb74bb8cc
      int sx,
      int sy,
      int sw,
-     int sh,
-     ExceptionState& exception_state) {
-+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-+  if (window && !AllowFingerprinting(window->GetFrame())) {
-+    return ImageData::CreateForTest(IntSize(0, 0));
-+  }
-   if (!base::CheckMul(sw, sh).IsValid<int>()) {
-     exception_state.ThrowRangeError("Out of memory at ImageData creation");
+@@ -1624,6 +1651,7 @@ ImageData* BaseRenderingContext2D::getImageData(
      return nullptr;
+   }
+ 
++  BRAVE_GET_IMAGE_DATA
+   bool may_have_stray_area =
+       IsAccelerated()  // GPU readback may fail silently.
+       || StaticBitmapImage::MayHaveStrayArea(snapshot, image_data_rect);
