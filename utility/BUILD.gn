@@ -36,7 +36,6 @@ source_set("utility") {
       "//base",
       "//chrome/app:chromium_strings",
       "//components/os_crypt",
-      "//components/password_manager/core/browser",
     ]
   }
 

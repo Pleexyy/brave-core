@@ -27,8 +27,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/os_crypt/os_crypt.h"
-#include "components/password_manager/core/browser/login_database.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "net/cookies/canonical_cookie.h"
