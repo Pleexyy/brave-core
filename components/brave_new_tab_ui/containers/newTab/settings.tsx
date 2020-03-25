@@ -31,6 +31,7 @@ export interface Props {
   allowBrandedWallpaperUI: boolean
   showRewards: boolean
   showBinance: boolean
+  onlyAnonWallet: boolean
 }
 
 export default class Settings extends React.PureComponent<Props, {}> {
@@ -82,7 +83,8 @@ export default class Settings extends React.PureComponent<Props, {}> {
       allowBrandedWallpaperUI,
       onClick,
       toggleShowBinance,
-      showBinance
+      showBinance,
+      onlyAnonWallet
     } = this.props
     return (
       <SettingsWrapper title={getLocale('dashboardSettingsTitle')} innerRef={this.settingsMenuRef}>
@@ -117,14 +119,18 @@ export default class Settings extends React.PureComponent<Props, {}> {
                 size='small'
               />
             </SettingsRow>
-            <SettingsRow>
-              <SettingsText>{getLocale('showBinance')}</SettingsText>
-              <Toggle
-                onChange={toggleShowBinance}
-                checked={showBinance}
-                size='small'
-              />
-            </SettingsRow>
+            {
+              !onlyAnonWallet
+              ? <SettingsRow>
+                  <SettingsText>{getLocale('showBinance')}</SettingsText>
+                  <Toggle
+                    onChange={toggleShowBinance}
+                    checked={showBinance}
+                    size='small'
+                  />
+                </SettingsRow>
+              : null
+            }
             <SettingsRow>
               <SettingsText>{getLocale('showBraveStats')}</SettingsText>
               <Toggle

@@ -37,6 +37,7 @@ interface Props {
   showBinance: boolean
   brandedWallpaperOptIn: boolean
   allowBrandedWallpaperUI: boolean
+  onlyAnonWallet: boolean
 }
 
 export default class FooterInfo extends React.PureComponent<Props, {}> {
@@ -63,7 +64,8 @@ export default class FooterInfo extends React.PureComponent<Props, {}> {
       toggleShowRewards,
       showRewards,
       toggleShowBinance,
-      showBinance
+      showBinance,
+      onlyAnonWallet
     } = this.props
 
     return (
@@ -100,6 +102,7 @@ export default class FooterInfo extends React.PureComponent<Props, {}> {
               showRewards={showRewards}
               toggleShowBinance={toggleShowBinance}
               showBinance={showBinance}
+              onlyAnonWallet={onlyAnonWallet}
             />
             <IconLink title={getLocale('preferencesPageTitle')} href='chrome://settings'>
               <SettingsAdvancedIcon />

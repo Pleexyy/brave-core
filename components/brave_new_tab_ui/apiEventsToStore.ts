@@ -7,7 +7,7 @@ import getActions from './api/getActions'
 import * as preferencesAPI from './api/preferences'
 import * as statsAPI from './api/stats'
 import * as privateTabDataAPI from './api/privateTabData'
-import { getInitialData, getRewardsInitialData, getRewardsPreInitialData } from './api/initialData'
+import { getInitialData, getRewardsInitialData, getRewardsPreInitialData, getOnlyAnonWallet } from './api/initialData'
 
 async function updatePreferences (prefData: preferencesAPI.Preferences) {
   getActions().preferencesUpdated(prefData)
@@ -37,6 +37,7 @@ export function wireApiEventsToStore () {
       rewardsInitData()
       setRewardsFetchInterval()
     }
+    onlyAnonInitData()
     getActions().setInitialData(initialData)
     // Listen for API changes and dispatch to store
     statsAPI.addChangeListener(updateStats)
@@ -62,6 +63,19 @@ export function rewardsInitData () {
   })
   .catch(e => {
     console.error('Error fetching pre-initial rewards data: ', e)
+  })
+}
+
+function onlyAnonInitData () {
+  getOnlyAnonWallet()
+  .then(({ onlyAnonWallet }) => {
+    if (onlyAnonWallet) {
+      getActions().setCurrentStackWidget('rewards')
+    }
+    getActions().setOnlyAnonWallet(onlyAnonWallet)
+  })
+  .catch(e => {
+    console.error('Error fetching anon wallet value')
   })
 }
 
