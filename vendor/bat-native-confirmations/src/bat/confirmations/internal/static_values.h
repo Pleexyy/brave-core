@@ -7,6 +7,8 @@
 #define BAT_CONFIRMATIONS_INTERNAL_STATIC_VALUES_H_
 
 #include <stdint.h>
+#include <map>
+#include <string>
 
 #include "base/time/time.h"
 
@@ -34,6 +36,80 @@ const uint64_t kDebugNextTokenRedemptionAfterSeconds =
 
 const uint64_t kRetryFailedConfirmationsAfterSeconds =
     5 * base::Time::kSecondsPerMinute;
+
+const std::map<std::string, bool> kLargeAnonymityCountryCodes = {
+  { "US", true  },  // United States of America
+  { "CA", true  },  // Canada
+  { "GB", true  },  // United Kingdom (Great Britain and Northern Ireland)
+  { "DE", true  },  // Germany
+  { "FR", true  },  // France
+  { "AU", true  },  // Australia
+  { "NZ", true  },  // New Zealand
+  { "IE", true  },  // Ireland
+  { "AR", true  },  // Argentina
+  { "AT", true  },  // Austria
+  { "BR", true  },  // Brazil
+  { "CH", true  },  // Switzerland
+  { "CL", true  },  // Chile
+  { "CO", true  },  // Colombia
+  { "DK", true  },  // Denmark
+  { "EC", true  },  // Ecuador
+  { "IL", true  },  // Israel
+  { "IN", true  },  // India
+  { "IT", true  },  // Italy
+  { "JP", true  },  // Japan
+  { "KR", true  },  // Korea
+  { "MX", true  },  // Mexico
+  { "NL", true  },  // Netherlands
+  { "PE", true  },  // Peru
+  { "PH", true  },  // Philippines
+  { "PL", true  },  // Poland
+  { "SE", true  },  // Sweden
+  { "SG", true  },  // Singapore
+  { "VE", true  },  // Venezuela
+  { "ZA", true  },  // South Africa
+  { "KY", false },  // Cayman Islands
+  { "AE", true  },  // United Arab Emirates
+  { "AL", true  },  // Albania
+  { "AZ", true  },  // Azerbaijan
+  { "BD", true  },  // Bangladesh
+  { "BE", true  },  // Belgium
+  { "BG", true  },  // Bulgaria
+  { "CN", true  },  // China
+  { "CZ", true  },  // Czechia
+  { "DZ", true  },  // Algeria
+  { "EG", true  },  // Egypt
+  { "ES", true  },  // Spain
+  { "FI", true  },  // Finland
+  { "GR", true  },  // Greece
+  { "HK", true  },  // Hong Kong
+  { "HR", true  },  // Croatia
+  { "HU", true  },  // Hungary
+  { "ID", true  },  // Indonesia
+  { "IQ", true  },  // Iraq
+  { "KH", true  },  // Cambodia
+  { "LT", true  },  // Lithuania
+  { "MA", true  },  // Morocco
+  { "MY", true  },  // Malaysia
+  { "NG", true  },  // Nigeria
+  { "NO", true  },  // Norway
+  { "PK", true  },  // Pakistan
+  { "PT", true  },  // Portugal
+  { "RO", true  },  // Romania
+  { "RS", true  },  // Serbia
+  { "RU", true  },  // Russian Federation
+  { "SA", true  },  // Saudi Arabia
+  { "SI", true  },  // Slovenia
+  { "SK", true  },  // Slovakia
+  { "TH", true  },  // Thailand
+  { "TR", true  },  // Turkey
+  { "TW", true  },  // Taiwan
+  { "UA", true  },  // Ukraine
+  { "VN", true  }   // Vietnam
+};
+
+const std::map<std::string, bool> kPrivacyCountryCodes = {
+};
 
 }  // namespace confirmations
 

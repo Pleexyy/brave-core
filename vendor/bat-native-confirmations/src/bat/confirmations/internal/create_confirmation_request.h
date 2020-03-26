@@ -18,12 +18,15 @@ using challenge_bypass_ristretto::BlindedToken;
 
 namespace confirmations {
 
+class ConfirmationsImpl;
 struct ConfirmationInfo;
 struct TokenInfo;
 
 class CreateConfirmationRequest {
  public:
-  CreateConfirmationRequest();
+  CreateConfirmationRequest(
+      ConfirmationsImpl* confirmations);
+
   ~CreateConfirmationRequest();
 
   std::string BuildUrl(
@@ -46,6 +49,9 @@ class CreateConfirmationRequest {
   std::string CreateCredential(
       const TokenInfo& token_info,
       const std::string& payload) const;
+
+ private:
+  ConfirmationsImpl* confirmations_;  // NOT OWNED
 };
 
 }  // namespace confirmations

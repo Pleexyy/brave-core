@@ -107,7 +107,7 @@ void RedeemToken::CreateConfirmation(
   BLOG(INFO) << "CreateConfirmation";
 
   BLOG(INFO) << "POST /v1/confirmation/{confirmation_id}/{credential}";
-  CreateConfirmationRequest request;
+  CreateConfirmationRequest request(confirmations_client_);
 
   BLOG(INFO) << "URL Request:";
 
@@ -150,6 +150,7 @@ void RedeemToken::CreateConfirmation(
   confirmation_info.creative_instance_id = ad_info.creative_instance_id;
   confirmation_info.type = confirmation_type;
   confirmation_info.token_info = token_info;
+  confirmation_info.country_code = ad_info.geo_target;
 
   auto payment_tokens = helper::Security::GenerateTokens(1);
   confirmation_info.payment_token = payment_tokens.front();
@@ -158,7 +159,7 @@ void RedeemToken::CreateConfirmation(
   auto blinded_payment_token = blinded_payment_tokens.front();
   confirmation_info.blinded_payment_token = blinded_payment_token;
 
-  CreateConfirmationRequest request;
+  CreateConfirmationRequest request(confirmations_client_);
   auto payload = request.CreateConfirmationRequestDTO(confirmation_info);
   confirmation_info.credential = request.CreateCredential(token_info, payload);
   confirmation_info.timestamp_in_seconds = Time::NowInSeconds();
@@ -466,7 +467,7 @@ bool RedeemToken::Verify(
   auto signature = signature_value->GetString();
   auto verification_signature = VerificationSignature::decode_base64(signature);
 
-  CreateConfirmationRequest request;
+  CreateConfirmationRequest request(confirmations_client_);
   auto payload = request.CreateConfirmationRequestDTO(info);
 
   auto unblinded_token = info.token_info.unblinded_token;

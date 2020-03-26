@@ -8,14 +8,20 @@
 #include "bat/confirmations/internal/token_info.h"
 #include "bat/confirmations/internal/create_confirmation_request.h"
 #include "bat/confirmations/internal/ads_serve_helper.h"
+#include "bat/confirmations/internal/platform_helper.h"
 #include "bat/confirmations/internal/security_helper.h"
+#include "bat/confirmations/internal/static_values.h"
 #include "base/logging.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
 
 namespace confirmations {
 
-CreateConfirmationRequest::CreateConfirmationRequest() = default;
+CreateConfirmationRequest::CreateConfirmationRequest(
+    ConfirmationsImpl* confirmations)
+    : confirmations_(confirmations) {
+  DCHECK(confirmations_);
+}
 
 CreateConfirmationRequest::~CreateConfirmationRequest() = default;
 
@@ -78,6 +84,28 @@ std::string CreateConfirmationRequest::CreateConfirmationRequestDTO(
 
   auto type = std::string(info.type);
   payload.SetKey("type", base::Value(type));
+
+  std::string country_code = info.country_code;
+  const auto iter = kLargeAnonymityCountryCodes.find(country_code);
+  if (iter != kLargeAnonymityCountryCodes.end()) {
+    const bool large_anonymity_country_code = iter->second;
+    if (large_anonymity_country_code) {
+      const auto iter = kPrivacyCountryCodes.find(country_code);
+      if (iter != kPrivacyCountryCodes.end()) {
+        country_code = "??";
+      }
+
+      payload.SetKey("countryCode", base::Value(country_code));
+    }
+  }
+
+  const std::string platform = PlatformHelper::GetInstance()->GetPlatformName();
+  if (!platform.empty()) {
+    payload.SetKey("platform", base::Value(platform));
+  }
+
+  const auto client_info = confirmations_->get_client()->GetClientInfo();
+  payload.SetKey("channelName", base::Value(client_info->channel));
 
   std::string json;
   base::JSONWriter::Write(payload, &json);
